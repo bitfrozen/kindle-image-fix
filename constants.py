@@ -1,0 +1,1 @@
+MAGIC_STRING = '/* IMG_INCLUDED */'
