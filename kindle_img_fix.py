@@ -1,5 +1,6 @@
 import sys, bs4, os
 import constants
+import logging
 
 def parse_arguments():
     import argparse
@@ -21,9 +22,9 @@ def add_media_to_CSS(cssref):
         lastline = cssfile.read().splitlines()[-1]
         # Check for 'magic' line, before adding media queries
         if lastline != constants.MAGIC_STRING:
-            print('\n -- Add media queries to stylesheet...')
+            logging.info("Add media queries to stylesheet...")
             data = '\n'
-            data += '\n/* Media queries for image setting */\n'
+            data += '/* Media queries for image setting */\n'
             data += '@media amzn-mobi {\n'
             data += ' .kf8only {\n'
             data += '  display: none;\n' 
@@ -46,23 +47,23 @@ def add_media_to_CSS(cssref):
             
 def getFilesToFix(content):
     if not os.path.exists(content):
-        print ('Content does not exist.\n')
+        logging.error("Content does not exist.")
         sys.exit()
     
     if os.path.isfile(content):
         return [content]
 
     if os.path.isdir(content):        
-        dirlist = []
+        filelist = []
         for root, dirs, files in os.walk(content):         
             for d in reversed(dirs):
                 if d.startswith('.'):
                     del dirs[dirs.index(d)]
             for filename in files:
                 if not filename.startswith('.') and filename.endswith('.xhtml'):
-                    dirlist.append(os.path.join(root, filename))
+                    filelist.append(os.path.join(root, filename))
 
-        return dirlist
+        return filelist
         
 
 def parse_html(fileHandle):
@@ -74,14 +75,15 @@ def find_img(html_soup):
     return html_soup.find_all("img")
 
 if __name__ == "__main__":
-
+    # Configure logging
+    logging.basicConfig(format='-- %(levelname)s: %(message)s',level=logging.DEBUG)
     # Guard against Py2
     if sys.version_info[0] == 2:
-        print("Need to use Python 3")
+        logging.error("Need to use Python 3")
         sys.exit()
     # Program initialization
     args = parse_arguments()
-    
+    logging.debug("Command line arguments: {}".format(args))
     # Verify content is a valid file or directory of files.
     print(getFilesToFix(args.content))
     # Add media classes to css file
